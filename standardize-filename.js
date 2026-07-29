@@ -14,8 +14,12 @@ for (const file of entries) {
   const base = path.basename(file, ext);
 
   const newName =
-    base.toLowerCase().replace(/'/g, "").trim().replace(/\s+/g, "-") +
-    ext.toLowerCase();
+    base
+      .toLowerCase()
+      .replace(/'/g, "")
+      .replace(/\./g, "-")
+      .trim()
+      .replace(/\s+/g, "-") + ext.toLowerCase();
 
   if (file === newName) continue;
 
