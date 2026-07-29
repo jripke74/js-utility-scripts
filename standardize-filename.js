@@ -1,36 +1,47 @@
 const fs = require("fs");
 const path = require("path");
 
-const folder = path.join(process.env.HOME, "Downloads", "test-folder");
+const folder = path.join(process.env.HOME, "Downloads", "music-cds");
 
-const entries = fs.readdirSync(folder);
+function renameFiles(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-for (const file of entries) {
-  const oldPath = path.join(folder, file);
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
 
-  if (!fs.statSync(oldPath).isFile()) continue;
+    if (entry.isDirectory()) {
+      renameFiles(fullPath);
+      continue;
+    }
 
-  const ext = path.extname(file);
-  const base = path.basename(file, ext);
+    if (entry.name === ".DS_Store") {
+      continue;
+    }
 
-  const newName =
-    base
-      .toLowerCase()
-      .replace(/'/g, "")
-      .replace(/\./g, "-")
-      .trim()
-      .replace(/\s+/g, "-") + ext.toLowerCase();
+    const ext = path.extname(entry.name);
+    const base = path.basename(entry.name, ext);
 
-  if (file === newName) continue;
+    const newName =
+      base
+        .toLowerCase()
+        .replace(/'/g, "")
+        .replace(/\./g, "-")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-") + ext.toLowerCase();
 
-  const tempName = "__temp__" + Date.now() + "_" + Math.random() + ext;
-  const tempPath = path.join(folder, tempName);
-  const newPath = path.join(folder, newName);
+    if (entry.name === newName) continue;
 
-  fs.renameSync(oldPath, tempPath);
-  fs.renameSync(tempPath, newPath);
+    const tempName = "__temp__" + Date.now() + "_" + Math.random() + ext;
+    const tempPath = path.join(dir, tempName);
+    const newPath = path.join(dir, newName);
 
-  console.log(`${file} -> ${newName}`);
+    fs.renameSync(fullPath, tempPath);
+    fs.renameSync(tempPath, newPath);
+
+    console.log(`${entry.name} -> ${newName}`);
+  }
 }
 
+renameFiles(folder);
 console.log("Finished!");
